@@ -1,38 +1,37 @@
+import streamlit as st
 from ftplib import FTP
 
 def download_file(ftp, filename):
     with open(filename, 'wb') as file:
         ftp.retrbinary(f'RETR {filename}', file.write)
-    print(f"File '{filename}' downloaded successfully")
+    st.success(f"File '{filename}' downloaded successfully")
 
 def upload_file(ftp, filename):
     with open(filename, 'rb') as file:
         ftp.storbinary(f'STOR {filename}', file)
-    print(f"File '{filename}' uploaded successfully")
+    st.success(f"File '{filename}' uploaded successfully")
 
 def main():
+    st.title("FTP Client")
     ftp = FTP('localhost')
     ftp.login(user='user', passwd='password')
+    
     # List files on the server
-    ftp.retrlines('LIST')
-    while True:
-        print("Select Operation:")
-        print("1. Download")
-        print("2. Upload")
-        print("3. Exit")
-        choice = input("Enter your choice (1/2/3): ")
+    files = ftp.nlst()
+    st.write("Files on the server:")
+    st.write(files)
 
-        if choice == "1":
-            filename = input("Enter file name to download: ")
+    choice = st.selectbox("Select Operation:", ["Download", "Upload", "Exit"])
+    if choice == "Download":
+        filename = st.text_input("Enter file name to download:")
+        if st.button("Download"):
             download_file(ftp, filename)
-        elif choice == "2":
-            filename = input("Enter file name to upload: ")
-            upload_file(ftp, filename)
-        elif choice == "3":
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please enter 1, 2, or 3.")
+    elif choice == "Upload":
+        uploaded_file = st.file_uploader("Choose a file to upload:")
+        if uploaded_file is not None:
+            filename = uploaded_file.name
+            if st.button("Upload"):
+                upload_file(ftp, filename)
 
     ftp.quit()
 
