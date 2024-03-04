@@ -1,0 +1,2 @@
+pyftpdlib==1.5.9
+streamlit==1.28.0
